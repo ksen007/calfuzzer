@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="javato" default="usage">
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="lib/ant-contrib.jar"/>
+        </classpath>
+    </taskdef>
+    <property name="javato.home.dir" location="."/>
+    <property name="benchdir" location="src/benchmarks"/>
+    <property name="javabenchdir" location="../java_bench"/>
+    <property name="tmpdir" location="./tmp"/>
+
+    <target name="clean">
+        <!--
+              Required poperties:
+                  javato.work.dir
+          -->
+        <fail unless="javato.work.dir"/>
+        <delete dir="${tmpdir}"/>
+        <delete dir="${javato.work.dir}/tmpclasses"/>
+        <delete dir="${javato.work.dir}/tmpbootclasses"/>
+        <delete file="${javato.work.dir}/javato.usedids"/>
+        <delete file="${javato.work.dir}/iidToLine.map"/>
+        <delete file="${javato.work.dir}/iidToLine.map.html"/>
+        <delete file="${javato.work.dir}/error.log"/>
+        <delete file="${javato.work.dir}/error.list"/>
+        <delete file="${javato.work.dir}/error.stat"/>
+        <delete file="${javato.work.dir}/error.stall"/>
+        <delete file="${javato.work.dir}/error.time"/>
+        <delete file="${javato.work.dir}/atomicity_data.out"/>
+    </target>
+
+    <target name="instr" description="run instrumentor" depends="clean">
+        <!--
+              Required poperties:
+                  javato.work.dir
+                  javato.app.main.class
+              Optional properties:
+                  javato.app.instr.dir
+                  javato.app.class.path
+                  javato.app.boot.list
+                  javato.instops
+          -->
+        <mkdir dir="${tmpdir}"/>
+        <fail unless="javato.work.dir"/>
+        <fail unless="javato.app.main.class"/>
+        <property name="javato.app.instr.dir" value=""/>
+        <property name="javato.app.class.path" value=""/>
+        <property name="javato.app.boot.list" value=""/>
+        <property name="javato.instops" value="-p jb use-original-names -validate"/>
+        <if>
+            <equals arg1="${javato.app.instr.dir}" arg2=""/>
+            <then>
+                <property name="javato_instops" value="${javato.instops}"/>
+                <path id="javato_app_class_path">
+                    <pathelement path="${javato.app.class.path}"/>
+                </path>
+            </then>
+            <else>
+                <property name="javato_instops"
+                          value="${javato.instops} -process-dir ${javato.app.instr.dir}"/>
+                <path id="javato_app_class_path">
+                    <pathelement location="${javato.app.instr.dir}"/>
+                    <pathelement path="${javato.app.class.path}"/>
+                </path>
+            </else>
+        </if>
+        <java classname="javato.activetesting.instrumentor.InstrumentorForActiveTesting"
+              fork="true" dir="${javato.work.dir}" maxmemory="2048m">
+            <arg value="-keep-line-number"/>
+            <arg line="${javato_instops}"/>
+            <arg value="-no-output-inner-classes-attribute"/>
+            <arg value="-d"/>
+            <arg file="${javato.work.dir}/tmpclasses"/>
+            <arg value="-x"/>
+            <arg value="javato"/>
+            <arg value="--app"/>
+            <arg line="${javato.app.main.class}"/>
+            <syspropertyset>
+                <propertyref builtin="all"/>
+            </syspropertyset>
+            <classpath>
+                <pathelement location="${javato.home.dir}/classes"/>
+                <pathelement location="${javato.home.dir}/lib/sootall-2.3.0.jar"/>
+                <path refid="javato_app_class_path"/>
+            </classpath>
+        </java>
+        <if>
+            <not>
+                <equals arg1="${javato.app.boot.list}" arg2=""/>
+            </not>
+            <then>
+                <mkdir dir="${javato.work.dir}/tmpbootclasses"/>
+                <for param="bootitem" list="${javato.app.boot.list}">
+                    <sequential>
+                        <var name="srcdir"
+                             value="${javato.work.dir}/tmpclasses/@{bootitem}"/>
+                        <var name="dstdir"
+                             value="${javato.work.dir}/tmpbootclasses/@{bootitem}"/>
+                        <mkdir dir="${dstdir}"/>
+                        <move todir="${dstdir}">
+                            <fileset dir="${srcdir}"/>
+                        </move>
+                    </sequential>
+                </for>
+            </then>
+        </if>
+    </target>
+
+    <target name="analysis-once" description="run analysis once">
+        <fail unless="javato.work.dir"/>
+        <fail unless="javato.app.main.class"/>
+        <fail unless="javato.activetesting.analysis.class"/>
+        <property name="javato.app.args" value=""/>
+        <property name="javato.app.class.path" value=""/>
+        <if>
+            <available file="${javato.work.dir}/tmpbootclasses"/>
+            <then>
+                <property name="jvm_args"
+                          value="-ea -Xbootclasspath/p:tmpbootclasses:${javato.home.dir}/classes"/>
+            </then>
+            <else>
+                <property name="jvm_args" value="-ea"/>
+            </else>
+        </if>
+        <stopwatch name="timer" action="start"/>
+        <java classname="${javato.app.main.class}"
+              fork="true" dir="${javato.work.dir}" maxmemory="1024m">
+            <arg line="${javato.app.args}"/>
+            <jvmarg line="${jvm_args}"/>
+            <!--            <sysproperty key="javato.deadlock.goodlock" value="false"/> -->
+            <syspropertyset>
+                <propertyref builtin="all"/>
+            </syspropertyset>
+            <classpath>
+                <pathelement location="${javato.work.dir}/tmpclasses"/>
+                <pathelement path="${javato.app.class.path}"/>
+                <pathelement location="${javato.home.dir}/classes"/>
+            </classpath>
+        </java>
+        <stopwatch name="timer" action="total"/>
+        <echo message="${timer}${line.separator}"
+              file="${javato.work.dir}/error.time" append="true"/>
+    </target>
+
+    <target name="predictest-loop" description="run predictest repeatedly">
+        <fail unless="javato.activetesting.trialnum.list"/>
+        <fail unless="javato.activetesting.errorlist.file"/>
+        <fail if="javato.activetesting.errornum"/>
+        <fail if="javato.activetesting.errorlist"/>
+        <loadfile property="javato.activetesting.errorlist"
+                  srcFile="${javato.activetesting.errorlist.file}">
+            <filterchain>
+                <striplinebreaks/>
+            </filterchain>
+        </loadfile>
+        <if>
+            <isset property="javato.activetesting.errorlist"/>
+            <then>
+                <for param="trialnum" list="${javato.activetesting.trialnum.list}">
+                    <sequential>
+                        <echo message="Iteration: @{trialnum}"/>
+                        <echo message="------------------"/>
+                        <for param="errornum" list="${javato.activetesting.errorlist}">
+                            <sequential>
+                                <echo message="Error:Iteration = @{errornum}:@{trialnum}"/>
+                                <echo message="------------------"/>
+                                <antcall target="analysis-once">
+                                    <param name="javato.activetesting.errorid" value="@{errornum}"/>
+                                </antcall>
+                                <antcall target="analysis-once">
+                                    <param name="javato.activetesting.errorid" value="@{errornum}"/>
+                                    <param name="javato.race.resolve.order" value="true"/>
+                                </antcall>
+                            </sequential>
+                        </for>
+                    </sequential>
+                </for>
+            </then>
+        </if>
+    </target>
+
+    <target name="predictest-once" description="run predictest once">
+        <fail unless="javato.activetesting.errorid"/>
+        <antcall target="analysis-once"/>
+        <antcall target="analysis-once">
+            <param name="javato.race.resolve.order" value="true"/>
+        </antcall>
+    </target>
+
+    <target name="usage" description="print usage instructions">
+        <echo message="Welcome to CalFuzzer!"/>
+        <echo message="Use 'ant -p' to see all valid targets."/>
+    </target>
+
+    <target name="predictest-analysis" description="Run deterministic hybrid race (both lock and data) detector and predictest with 2 trials per potential error">
+        <property name="javato.ignore.methods" value="true"/>
+        <property name="javato.ignore.allocs" value="true"/>
+        <property name="javato.activetesting.trialnum.list" value="1,2"/>
+        <property name="javato.track.iid.visit.count" value="true"/>
+        <property name="javato.schedule.deterministic" value="true"/>
+        <property name="javato.hybrid.removeoldaccess" value="true"/>
+        <property name="javato.activetesting.errorlist.file" value="${javato.work.dir}/error.list"/>
+        <if>
+            <isset property="javato.activetesting.errorid"/>
+            <then>
+                <antcall target="predictest-once">
+                    <param name="javato.activetesting.analysis.class" value="javato.activetesting.PredictestAnalysis"/>
+                </antcall>
+            </then>
+            <else>
+                <antcall target="instr"/>
+                <antcall target="analysis-once">
+                    <param name="javato.activetesting.analysis.class" value="javato.activetesting.PAtomicityAnalysis"/>
+                </antcall>
+                <antcall target="predictest-loop">
+                    <param name="javato.activetesting.analysis.class" value="javato.activetesting.PredictestAnalysis"/>
+                </antcall>
+            </else>
+        </if>
+    </target>
+
+    <target name="match.error.stat">
+         <fail>
+             <condition>
+                 <not>
+                     <filesmatch
+                             file1="${javato.home.dir}/test/benchmarks/testcases/${test.output.file}"
+                             file2="${javato.work.dir}/error.stat"/>
+                 </not>
+             </condition>
+         </fail>
+     </target>
+
+    <!-- predictest test suite follows -->
+
+
+    <target name="test_atom1">
+        <echo message="no lock-based atomicity violation"/>
+        <property name="javato.work.dir" value="${tmpdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.testcases.TestAtomicity1"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_atom15">
+        <echo message="1 atomicity violation"/>
+        <property name="javato.work.dir" value="${tmpdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.testcases.TestAtomicity15"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_atom16">
+        <echo message="1 atomicity violation"/>
+        <property name="javato.work.dir" value="${tmpdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.testcases.TestAtomicity16"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_atom17">
+        <echo message="2 atomicity violation(s)"/>
+        <property name="javato.work.dir" value="${tmpdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.testcases.TestAtomicity17"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_atom18">
+        <echo message="1 atomicity violation(s)"/>
+        <property name="javato.work.dir" value="${tmpdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.testcases.TestAtomicity18"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_atom19">
+        <echo message="3 atomicity violation(s)"/>
+        <property name="javato.work.dir" value="${tmpdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.testcases.TestAtomicity19"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_atom20">
+        <echo message="3 atomicity violation(s)"/>
+        <property name="javato.work.dir" value="${tmpdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.testcases.TestAtomicity20"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+
+
+</project>

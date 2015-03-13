@@ -1,0 +1,40 @@
+lock@benchmarks/testcases/TestRace9.java#44||lock@benchmarks/testcases/TestRace9.java#52
+1:lock contention::
+lock@benchmarks/testcases/TestRace9.java#44||lock@benchmarks/testcases/TestRace9.java#52
+1:lock contention::
+lock@benchmarks/testcases/TestRace9.java#44||lock@benchmarks/testcases/TestRace9.java#55
+2:lock contention::
+lock@benchmarks/testcases/TestRace9.java#44||lock@benchmarks/testcases/TestRace9.java#55
+2:lock contention::
+read@benchmarks/testcases/TestRace9.java#61||write@benchmarks/testcases/TestRace9.java#43
+3:::
+read@benchmarks/testcases/TestRace9.java#61||write@benchmarks/testcases/TestRace9.java#43
+3:::
+write@benchmarks/testcases/TestRace9.java#61||write@benchmarks/testcases/TestRace9.java#43
+4:::
+write@benchmarks/testcases/TestRace9.java#61||write@benchmarks/testcases/TestRace9.java#43
+4:::
+write@benchmarks/testcases/TestRace9.java#61||read@benchmarks/testcases/TestRace9.java#43
+5:::
+write@benchmarks/testcases/TestRace9.java#61||read@benchmarks/testcases/TestRace9.java#43
+5:::
+lock@benchmarks/testcases/TestRace9.java#44||lock@benchmarks/testcases/TestRace9.java#52
+1:lock contention::
+lock@benchmarks/testcases/TestRace9.java#44||lock@benchmarks/testcases/TestRace9.java#52
+1:lock contention::
+lock@benchmarks/testcases/TestRace9.java#44||lock@benchmarks/testcases/TestRace9.java#55
+2:lock contention::
+lock@benchmarks/testcases/TestRace9.java#44||lock@benchmarks/testcases/TestRace9.java#55
+2:lock contention::
+read@benchmarks/testcases/TestRace9.java#61||write@benchmarks/testcases/TestRace9.java#43
+3:::
+read@benchmarks/testcases/TestRace9.java#61||write@benchmarks/testcases/TestRace9.java#43
+3:::
+write@benchmarks/testcases/TestRace9.java#61||write@benchmarks/testcases/TestRace9.java#43
+4:::
+write@benchmarks/testcases/TestRace9.java#61||write@benchmarks/testcases/TestRace9.java#43
+4:::
+write@benchmarks/testcases/TestRace9.java#61||read@benchmarks/testcases/TestRace9.java#43
+5:::
+write@benchmarks/testcases/TestRace9.java#61||read@benchmarks/testcases/TestRace9.java#43
+5:::

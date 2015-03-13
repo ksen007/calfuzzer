@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<project basedir="." default="build" name="calfuzzer">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <path id="calfuzzer.classpath">
+        <pathelement location="classes"/>
+        <pathelement location="lib/ant-contrib.jar"/>
+        <pathelement location="lib/asm-3.1.jar"/>
+        <pathelement location="lib/servlet.jar"/>
+        <pathelement location="lib/sootall-2.3.0.jar"/>
+        <pathelement location="src/benchmarks/weblech-0.0.3/lib/log4j-1.1.3.jar"/>
+    </path>
+    <path id="calfuzzer.testclasspath">
+        <path refid="calfuzzer.classpath"/>
+        <pathelement location="classes"/>
+        <pathelement location="lib/junit-4.7.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="classes"/>
+    </target>
+    <target name="clean">
+        <delete dir="classes"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project,build-tests" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="classes" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="calfuzzer.classpath"/>
+        </javac>
+    </target>
+    <target depends="init,build-project" name="build-tests">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="classes" source="${source}" target="${target}">
+            <src path="test"/>
+            <classpath refid="calfuzzer.testclasspath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+        <copy todir="${ant.library.dir}">
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </copy>
+        <unzip dest="${ant.library.dir}">
+            <patternset includes="jdtCompilerAdapter.jar"/>
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </unzip>
+    </target>
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+</project>

@@ -1,0 +1,56 @@
+lock@benchmarks/testcases/TestDeadlock2a.java#59||lock@benchmarks/testcases/TestDeadlock2a.java#21
+1:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#59||lock@benchmarks/testcases/TestDeadlock2a.java#21
+1:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#78||lock@benchmarks/testcases/TestDeadlock2a.java#20
+2:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#78||lock@benchmarks/testcases/TestDeadlock2a.java#20
+2:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#98||lock@benchmarks/testcases/TestDeadlock2a.java#77
+3:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#98||lock@benchmarks/testcases/TestDeadlock2a.java#77
+3:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#36||lock@benchmarks/testcases/TestDeadlock2a.java#97
+4:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#36||lock@benchmarks/testcases/TestDeadlock2a.java#97
+4:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#39||lock@benchmarks/testcases/TestDeadlock2a.java#77
+5:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#39||lock@benchmarks/testcases/TestDeadlock2a.java#77
+5:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#60||lock@benchmarks/testcases/TestDeadlock2a.java#37
+6:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#60||lock@benchmarks/testcases/TestDeadlock2a.java#37
+6:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#60||lock@benchmarks/testcases/TestDeadlock2a.java#99
+7:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#60||lock@benchmarks/testcases/TestDeadlock2a.java#99
+7:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#59||lock@benchmarks/testcases/TestDeadlock2a.java#21
+1:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#59||lock@benchmarks/testcases/TestDeadlock2a.java#21
+1:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#78||lock@benchmarks/testcases/TestDeadlock2a.java#20
+2:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#78||lock@benchmarks/testcases/TestDeadlock2a.java#20
+2:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#98||lock@benchmarks/testcases/TestDeadlock2a.java#77
+3:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#98||lock@benchmarks/testcases/TestDeadlock2a.java#77
+3:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#36||lock@benchmarks/testcases/TestDeadlock2a.java#97
+4:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#36||lock@benchmarks/testcases/TestDeadlock2a.java#97
+4:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#39||lock@benchmarks/testcases/TestDeadlock2a.java#77
+5:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#39||lock@benchmarks/testcases/TestDeadlock2a.java#77
+5:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#60||lock@benchmarks/testcases/TestDeadlock2a.java#37
+6:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#60||lock@benchmarks/testcases/TestDeadlock2a.java#37
+6:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#60||lock@benchmarks/testcases/TestDeadlock2a.java#99
+7:lock contention::
+lock@benchmarks/testcases/TestDeadlock2a.java#60||lock@benchmarks/testcases/TestDeadlock2a.java#99
+7:lock contention::

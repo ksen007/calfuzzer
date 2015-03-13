@@ -1,0 +1,795 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="javato" default="usage">
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="lib/ant-contrib.jar"/>
+        </classpath>
+    </taskdef>
+    <property name="javato.home.dir" location="."/>
+    <property name="benchdir" location="src/benchmarks"/>
+    <property name="javabenchdir" location="../java_bench"/>
+    <property name="tmpdir" location="./tmp"/>
+
+    <target name="clean">
+        <!--
+              Required poperties:
+                  javato.work.dir
+          -->
+        <fail unless="javato.work.dir"/>
+        <delete dir="${tmpdir}"/>
+        <delete dir="${javato.work.dir}/tmpclasses"/>
+        <delete dir="${javato.work.dir}/tmpbootclasses"/>
+        <delete file="${javato.work.dir}/javato.usedids"/>
+        <delete file="${javato.work.dir}/iidToLine.map"/>
+        <delete file="${javato.work.dir}/iidToLine.map.html"/>
+        <delete file="${javato.work.dir}/error.log"/>
+        <delete file="${javato.work.dir}/error.list"/>
+        <delete file="${javato.work.dir}/error.stat"/>
+        <delete file="${javato.work.dir}/error.time"/>
+    </target>
+
+    <target name="instr" description="run instrumentor" depends="clean">
+        <!--
+              Required poperties:
+                  javato.work.dir
+                  javato.app.main.class
+              Optional properties:
+                  javato.app.instr.dir
+                  javato.app.class.path
+                  javato.app.boot.list
+                  javato.instops
+          -->
+        <mkdir dir="${tmpdir}"/>
+        <fail unless="javato.work.dir"/>
+        <fail unless="javato.app.main.class"/>
+        <property name="javato.app.instr.dir" value=""/>
+        <property name="javato.app.class.path" value=""/>
+        <property name="javato.app.boot.list" value=""/>
+        <property name="javato.instops" value="-p jb use-original-names -validate"/>
+        <if>
+            <equals arg1="${javato.app.instr.dir}" arg2=""/>
+            <then>
+                <property name="javato_instops" value="${javato.instops}"/>
+                <path id="javato_app_class_path">
+                    <pathelement path="${javato.app.class.path}"/>
+                </path>
+            </then>
+            <else>
+                <property name="javato_instops"
+                          value="${javato.instops} -process-dir ${javato.app.instr.dir}"/>
+                <path id="javato_app_class_path">
+                    <pathelement location="${javato.app.instr.dir}"/>
+                    <pathelement path="${javato.app.class.path}"/>
+                </path>
+            </else>
+        </if>
+        <java classname="javato.activetesting.instrumentor.InstrumentorForActiveTesting"
+              fork="true" dir="${javato.work.dir}" maxmemory="2048m">
+            <arg value="-keep-line-number"/>
+            <arg line="${javato_instops}"/>
+            <arg value="-no-output-inner-classes-attribute"/>
+            <arg value="-d"/>
+            <arg file="${javato.work.dir}/tmpclasses"/>
+            <arg value="-x"/>
+            <arg value="javato"/>
+            <arg value="--app"/>
+            <arg line="${javato.app.main.class}"/>
+            <syspropertyset>
+                <propertyref builtin="all"/>
+            </syspropertyset>
+            <classpath>
+                <pathelement location="${javato.home.dir}/classes"/>
+                <pathelement location="${javato.home.dir}/lib/sootall-2.3.0.jar"/>
+                <path refid="javato_app_class_path"/>
+            </classpath>
+        </java>
+        <if>
+            <not>
+                <equals arg1="${javato.app.boot.list}" arg2=""/>
+            </not>
+            <then>
+                <mkdir dir="${javato.work.dir}/tmpbootclasses"/>
+                <for param="bootitem" list="${javato.app.boot.list}">
+                    <sequential>
+                        <var name="srcdir"
+                             value="${javato.work.dir}/tmpclasses/@{bootitem}"/>
+                        <var name="dstdir"
+                             value="${javato.work.dir}/tmpbootclasses/@{bootitem}"/>
+                        <mkdir dir="${dstdir}"/>
+                        <move todir="${dstdir}">
+                            <fileset dir="${srcdir}"/>
+                        </move>
+                    </sequential>
+                </for>
+            </then>
+        </if>
+    </target>
+
+    <target name="analysis-once" description="run analysis once">
+        <fail unless="javato.work.dir"/>
+        <fail unless="javato.app.main.class"/>
+        <fail unless="javato.activetesting.analysis.class"/>
+        <property name="javato.app.args" value=""/>
+        <property name="javato.app.class.path" value=""/>
+		<property name="javato.activetesting.timeout" value="3600000"/>
+        <if>
+            <available file="${javato.work.dir}/tmpbootclasses"/>
+            <then>
+                <property name="jvm_args"
+                          value="-ea -Xbootclasspath/p:tmpbootclasses:${javato.home.dir}/classes"/>
+            </then>
+            <else>
+                <property name="jvm_args" value="-ea"/>
+            </else>
+        </if>
+        <stopwatch name="timer" action="start"/>
+        <java classname="${javato.app.main.class}"
+              fork="true" dir="${javato.work.dir}" maxmemory="1024m" timeout="${javato.activetesting.timeout}">
+            <arg line="${javato.app.args}"/>
+            <jvmarg line="${jvm_args}"/>
+            <!--            <sysproperty key="javato.deadlock.goodlock" value="false"/> -->
+            <syspropertyset>
+                <propertyref builtin="all"/>
+            </syspropertyset>
+            <classpath>
+                <pathelement location="${javato.work.dir}/tmpclasses"/>
+                <pathelement path="${javato.app.class.path}"/>
+                <pathelement location="${javato.home.dir}/classes"/>
+            </classpath>
+        </java>
+        <stopwatch name="timer" action="total"/>
+        <echo message="${timer}${line.separator}"
+              file="${javato.work.dir}/error.time" append="true"/>
+    </target>
+
+    <target name="predictest-loop" description="run predictest repeatedly">
+        <fail unless="javato.activetesting.trialnum.list"/>
+        <fail unless="javato.activetesting.errorlist.file"/>
+        <fail if="javato.activetesting.errornum"/>
+        <fail if="javato.activetesting.errorlist"/>
+        <loadfile property="javato.activetesting.errorlist"
+                  srcFile="${javato.activetesting.errorlist.file}">
+            <filterchain>
+                <striplinebreaks/>
+            </filterchain>
+        </loadfile>
+        <if>
+            <isset property="javato.activetesting.errorlist"/>
+            <then>
+                <for param="trialnum" list="${javato.activetesting.trialnum.list}">
+                    <sequential>
+                        <echo message="Iteration: @{trialnum}"/>
+                        <echo message="------------------"/>
+                        <for param="errornum" list="${javato.activetesting.errorlist}">
+                            <sequential>
+                                <echo message="Error:Iteration = @{errornum}:@{trialnum}"/>
+                                <echo message="------------------"/>
+                                <antcall target="analysis-once">
+                                    <param name="javato.activetesting.errorid" value="@{errornum}"/>
+                                </antcall>
+                            </sequential>
+                        </for>
+                    </sequential>
+                </for>
+            </then>
+        </if>
+    </target>
+
+    <target name="predictest-once" description="run predictest once">
+        <fail unless="javato.activetesting.errorid"/>
+        <antcall target="analysis-once"/>
+    </target>
+
+    <target name="usage" description="print usage instructions">
+        <echo message="Welcome to CalFuzzer!"/>
+        <echo message="Use 'ant -p' to see all valid targets."/>
+    </target>
+
+    <target name="predictest-analysis" description="Run deterministic hybrid race (both lock and data) detector and predictest with 2 trials per potential error">
+        <property name="javato.ignore.methods" value="true"/>
+        <property name="javato.ignore.allocs" value="true"/>
+        <property name="javato.activetesting.trialnum.list" value="1,2"/>
+        <property name="javato.schedule.deterministic" value="true"/>
+        <property name="javato.activetesting.errorlist.file" value="${javato.work.dir}/error.list"/>
+        <if>
+            <isset property="javato.activetesting.errorid"/>
+            <then>
+                <antcall target="predictest-once">
+                    <param name="javato.activetesting.analysis.class" value="javato.activetesting.CDeadlockAnalysis"/>
+                </antcall>
+            </then>
+            <else>
+                <antcall target="instr"/>
+                <antcall target="analysis-once">
+                    <param name="javato.activetesting.analysis.class" value="javato.activetesting.IGoodlockAnalysis"/>
+                </antcall>
+                <antcall target="predictest-loop">
+                    <param name="javato.activetesting.analysis.class" value="javato.activetesting.CDeadlockAnalysis"/>
+                </antcall>
+            </else>
+        </if>
+    </target>
+
+    <target name="match.error.stat">
+         <fail>
+             <condition>
+                 <not>
+                     <filesmatch
+                             file1="${javato.home.dir}/test/benchmarks/testcases/${test.output.file}"
+                             file2="${javato.work.dir}/error.stat"/>
+                 </not>
+             </condition>
+         </fail>
+     </target>
+
+    <!-- predictest test suite follows -->
+
+    <target name="test_deadlock1_t">
+       <echo message="1 potential and 1 real deadlock"/>
+       <property name="javato.work.dir" value="${tmpdir}"/>
+       <property name="javato.app.main.class" value="benchmarks.testcases.TestDeadlock1"/>
+       <antcall target="predictest-analysis"/>
+        <antcall target="match.error.stat">
+             <param name="test.output.file" value="deadlock1.txt"/>
+         </antcall>
+   </target>
+
+   <target name="test_deadlock1a_t">
+       <echo message="1 potential and 1 real deadlock"/>
+       <property name="javato.work.dir" value="${tmpdir}"/>
+       <property name="javato.app.main.class" value="benchmarks.testcases.TestDeadlock1a"/>
+       <property name="javato.schedule.seed" value="456"/>
+       <antcall target="predictest-analysis"/>
+       <antcall target="match.error.stat">
+            <param name="test.output.file" value="deadlock1a.txt"/>
+        </antcall>
+   </target>
+
+   <target name="test_deadlock1b_t">
+       <echo message="1 potential and 1 real deadlock"/>
+       <property name="javato.work.dir" value="${tmpdir}"/>
+       <property name="javato.app.main.class" value="benchmarks.testcases.TestDeadlock1b"/>
+       <property name="javato.schedule.seed" value="456"/>
+       <antcall target="predictest-analysis"/>
+       <antcall target="match.error.stat">
+            <param name="test.output.file" value="deadlock1b.txt"/>
+        </antcall>
+    </target>
+
+   <target name="test_deadlock2_t">
+       <echo message="0 potential and 0 real deadlock"/>
+       <property name="javato.work.dir" value="${tmpdir}"/>
+       <property name="javato.app.main.class" value="benchmarks.testcases.TestDeadlock2"/>
+       <antcall target="predictest-analysis"/>
+       <antcall target="match.error.stat">
+            <param name="test.output.file" value="deadlock2.txt"/>
+        </antcall>
+   </target>
+
+   <target name="test_deadlock2a_t">
+       <echo message="0 potential and 0 real deadlock"/>
+       <property name="javato.work.dir" value="${tmpdir}"/>
+       <property name="javato.app.main.class" value="benchmarks.testcases.TestDeadlock2a"/>
+       <antcall target="predictest-analysis"/>
+       <antcall target="match.error.stat">
+            <param name="test.output.file" value="deadlock2a.txt"/>
+        </antcall>
+   </target>
+
+   <target name="test_deadlock3_t">
+       <echo message="1 potential and 1 real deadlock"/>
+       <property name="javato.work.dir" value="${tmpdir}"/>
+       <property name="javato.app.main.class" value="benchmarks.testcases.TestDeadlock3"/>
+       <antcall target="predictest-analysis"/>
+       <antcall target="match.error.stat">
+            <param name="test.output.file" value="deadlock3.txt"/>
+        </antcall>
+   </target>
+
+   <target name="test_deadlock4_t">
+       <echo message="1 potential and 1 real deadlock"/>
+       <property name="javato.work.dir" value="${tmpdir}"/>
+       <property name="javato.app.main.class" value="benchmarks.testcases.TestDeadlock4"/>
+       <antcall target="predictest-analysis"/>
+       <antcall target="match.error.stat">
+            <param name="test.output.file" value="deadlock4.txt"/>
+        </antcall>
+   </target>
+
+   <target name="test_deadlock4b_t">
+       <echo message="1 potential and 1 real deadlock"/>
+       <property name="javato.work.dir" value="${tmpdir}"/>
+       <property name="javato.app.main.class" value="benchmarks.testcases.TestDeadlock4b"/>
+       <antcall target="predictest-analysis"/>
+       <antcall target="match.error.stat">
+            <param name="test.output.file" value="deadlock4b.txt"/>
+        </antcall>
+   </target>
+
+
+    <target name="test_log4j_t">
+        <property name="javato.work.dir" value="${javabenchdir}/jakarta-log4j-1.2.8"/>
+        <property name="javato.app.main.class" value="Test"/>
+        <property name="javato.app.class.path" value="${javato.work.dir}/test:${javato.work.dir}/dist/classes"/>
+        <!--<property name="javato.app.instr.dir"
+                value="${javato.work.dir}/classes:${javato.work.dir}/build/classes/java:${javato.work.dir}/build/classes/test:${javato.work.dir}/build/classes/demo"/>-->
+        <property name="javato.instops" value="-i org.apache"/>
+        <property name="javato.schedule.seed" value="45"/>
+        <!--<ant dir="${javato.work.dir}" target="build"/>-->
+        <antcall target="predictest-analysis"/>
+        <antcall target="match.error.stat">
+             <param name="test.output.file" value="log4j.txt"/>
+         </antcall>
+    </target>
+
+    <target name="test_log4j2_t">
+        <property name="javato.work.dir" value="${javabenchdir}/logging-log4j-1.2.13"/>
+        <property name="javato.app.main.class" value="TestLoggingDet"/>
+        <property name="javato.app.class.path" value="${javato.work.dir}/classes"/>
+        <property name="javato.app.instr.dir"
+                value="${javato.work.dir}/dist/classes"/>
+        <property name="javato.instops" value="-i org.apache"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_lucene1">
+        <property name="javato.work.dir" value="${javabenchdir}/lucene-1.4.3"/>
+        <property name="javato.app.main.class" value="Test"/>
+        <property name="javato.app.class.path" value="${javato.work.dir}/build:${javato.work.dir}/build/lucene-1.5-rc1-dev.jar"/>
+        <property name="javato.schedule.seed" value="456"/>
+        <property name="javato.instops" value="-i org.apache"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_tsp_t">
+        <property name="javato.work.dir" value="${benchdir}/tsp"/>
+        <property name="javato.app.main.class" value="benchmarks.tsp.Tsp"/>
+        <property name="javato.app.args" value="tspfiles/map16 5"/>
+        <property name="javato.ignore.methods" value="true"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_sor_t">
+        <echo message="8 potential and 0 real race"/>
+        <property name="javato.work.dir" value="${benchdir}/sor"/>
+        <property name="javato.app.main.class" value="benchmarks.sor.Sor"/>
+        <property name="javato.app.args" value="10 10"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_moldyn_t">
+        <echo message="34 potential and 2 real race"/>
+        <property name="javato.work.dir" value="${tmpdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.JGFMolDynBenchSizeA"/>
+        <property name="javato.app.args" value="3"/>
+        <antcall target="predictest-analysis"/>
+        <antcall target="match.error.stat">
+             <param name="test.output.file" value="moldyn.txt"/>
+         </antcall>
+    </target>
+
+    <target name="test_rt_t">
+        <echo message="4 potential and 4 real race"/>
+        <property name="javato.work.dir" value="${tmpdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.JGFRayTracerBenchSizeA"/>
+        <property name="javato.app.args" value="3"/>
+        <antcall target="predictest-analysis"/>
+        <antcall target="match.error.stat">
+             <param name="test.output.file" value="raytracer.txt"/>
+         </antcall>
+    </target>
+
+    <target name="test_mc_t">
+        <echo message="5 potential and 1 real race"/>
+        <property name="javato.work.dir" value="${benchdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.JGFMonteCarloBenchSizeA"/>
+        <property name="javato.app.args" value="3"/>
+        <antcall target="predictest-analysis"/>
+        <antcall target="match.error.stat">
+             <param name="test.output.file" value="mc.txt"/>
+         </antcall>
+    </target>
+
+    <target name="test_hedc_t">
+        <echo message="9 potential and 1 real race"/>
+        <property name="javato.work.dir" value="${javabenchdir}/hedc"/>
+        <property name="javato.app.class.path" value="${javato.work.dir}/lib/servlet.jar"/>
+        <property name="javato.app.main.class" value="benchmarks.hedc.Tester"/>
+        <antcall target="predictest-analysis"/>
+        <antcall target="match.error.stat">
+             <param name="test.output.file" value="hedc.txt"/>
+         </antcall>
+    </target>
+
+    <target name="test_cache4j_t">
+        <echo message="18 potential and 3 real races"/>
+        <property name="javato.work.dir" value="${javabenchdir}/cache4j"/>
+        <property name="javato.app.instr.dir" value="${javato.work.dir}/build/classes"/>
+        <property name="javato.app.class.path" value="${javato.work.dir}/build/classes"/>
+        <property name="javato.app.main.class" value="net.sf.cache4j.test.Tester"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+
+    <target name="test_list_t">
+        <echo message="# of potential and real races are the same"/>
+        <property name="javato.work.dir" value="${benchdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.dstest.MTListTest"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_array_list_t">
+        <echo message="# of potential and real races are the same"/>
+        <property name="javato.work.dir" value="${benchdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.dstest.MTArrayListTest"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_set_t">
+        <echo message="# of potential and real races are the same"/>
+        <property name="javato.work.dir" value="${benchdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.dstest.MTSetTest"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_tree_set_t">
+        <echo message="# of potential and real races are the same"/>
+        <property name="javato.work.dir" value="${benchdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.dstest.MTTreeSetTest"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_linked_hash_set_t">
+        <echo message="# of potential and real races are the same"/>
+        <property name="javato.work.dir" value="${benchdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.dstest.MTLinkedHashSetTest"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="test_vector_t">
+        <echo message="# of potential and real races are the same"/>
+        <property name="javato.work.dir" value="${benchdir}"/>
+        <property name="javato.app.main.class" value="benchmarks.dstest.MTVectorTest"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+	<target name="t_test_lucene">
+		<property name="javato.work.dir" value="${javabenchdir}/lucene-2.3.0"/>
+        <property name="javato.app.main.class" value="TestDeadLock"/>
+		<property name="javato.app.class.path" value="${javato.work.dir}/classes:${javato.work.dir}/build/classes/java:${javato.work.dir}/lib/junit-4.7.jar"/>
+        <!--<property name="javato.app.instr.dir"
+				value="${javato.work.dir}/build/classes/java"/>-->
+        <property name="javato.instops" value="-i org.apache.lucene -x java"/>
+		<!--<ant dir="${javato.work.dir}"/>-->
+        <antcall target="predictest-analysis"/>
+	</target>
+
+    <target name="t_test_log">
+        <property name="javato.work.dir" value="${javabenchdir}/log_test"/>
+        <property name="javato.app.class.path"
+                  value="${javato.work.dir}/classes"/>
+        <property name="javato.app.main.class" value="T"/>
+        <property name="javato.instops" value="-i java.util.logging"/>
+        <property name="javato.app.boot.list" value="java/util"/>
+        <property name="javato.schedule.seed" value="2"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <!-- 1 deadlock and 2 benign data races -->
+    <target name="t_test_dbcp">
+		<property name="javato.work.dir" value="${javabenchdir}/dbcptest"/>
+        <property name="javato.app.class.path"
+                  value="${javato.work.dir}/classes:${javato.work.dir}/lib/commons-dbcp.jar:${javato.work.dir}/lib/commons-pool.jar:${javato.work.dir}/lib/hsqldb.jar"/>
+        <property name="javato.app.boot.list" value="java"/>
+        <property name="javato.app.main.class" value="DBCPHarness"/>
+        <property name="javato.instops" value="-i java.sql -i org.apache"/>
+        <property name="jdbc.drivers" value="org.hsqldb.jdbcDriver"/>
+        <ant dir="${javato.work.dir}"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="t_test_swing">
+        <property name="javato.work.dir" value="${javabenchdir}/swing_test"/>
+        <property name="javato.app.class.path"
+                  value="${javato.work.dir}/classes"/>
+        <property name="javato.app.main.class" value="T"/>
+        <property name="javato.instops" value="-i java.awt -i javax.swing"/>
+        <property name="javato.app.boot.list" value="java/awt,javax/swing"/>
+        <property name="javato.schedule.seed" value="45689"/>
+        <ant dir="${javato.work.dir}"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+    <target name="t_test_pool">
+        <property name="javato.work.dir" value="${javabenchdir}/commons-pool-1.5-src"/>
+        <property name="javato.app.class.path"
+                  value="${javato.work.dir}/build/classes:${javato.work.dir}/classes"/>
+        <property name="javato.app.main.class" value="BugTest"/>
+        <property name="javato.instops" value="-i org.apache"/>
+        <property name="javato.schedule.seed" value="456"/>
+        <ant dir="${javato.work.dir}"/>
+        <antcall target="predictest-analysis"/>
+    </target>
+
+	<target name="t_test_jigsaw_ni">
+        <property name="javato.work.dir" value="${javabenchdir}/jigsaw/Jigsaw"/>
+        <property name="javato.app.instr.dir"
+                  value="${javato.work.dir}/../classes/admin:${javato.work.dir}/../classes/core:${javato.work.dir}/../classes/edit"/>
+        <property name="javato.app.class.path"
+                  value="${javato.work.dir}/../classes/admin:${javato.work.dir}/../classes/core:${javato.work.dir}/../classes/edit:${javato.work.dir}/../class/oro.jar:${javato.work.dir}/../class/servlet.jar:${javato.work.dir}/../class/Tidy.jar:${javato.work.dir}/../class/xp.jar:${javato.work.dir}/../class/sax.jar:${javato.work.dir}/../class/xerces.jar"/>
+        <property name="javato.app.main.class" value="org.w3c.jigsaw.Main"/>
+        <property name="javato.deadlock.cyclenum.file" value="${javato.work.dir}/deadlock.list"/>
+        <property name="javato.instops" value="-i org.w3c"/>
+        <property name="javato.app.args" value="-config ../java_bench/jigsaw/Jigsaw/config"/>
+        <property name="javato.ignore.methods" value="true"/>
+        <property name="javato.ignore.allocs" value="true"/>
+        <property name="javato.activetesting.trialnum.list" value="1,2"/>
+        <property name="javato.track.iid.visit.count" value="true"/>
+        <property name="javato.schedule.deterministic" value="true"/>
+        <property name="javato.track.lock.races" value="true"/>
+        <property name="javato.activetesting.errorlist.file" value="${javato.work.dir}/error.list"/>
+		<property name="javato.activetesting.timeout" value="180000"/>
+        <antcall target="-predictest-loop-jigsaw">
+            <param name="javato.activetesting.analysis.class" value="javato.activetesting.CDeadlockAnalysis"/>
+        </antcall>
+	</target>
+
+	<target name="t_test_jigsaw">
+        <property name="javato.work.dir" value="${javabenchdir}/jigsaw/Jigsaw"/>
+        <property name="javato.app.instr.dir"
+                  value="${javato.work.dir}/../classes/admin:${javato.work.dir}/../classes/core:${javato.work.dir}/../classes/edit"/>
+        <property name="javato.app.class.path"
+                  value="${javato.work.dir}/../classes/admin:${javato.work.dir}/../classes/core:${javato.work.dir}/../classes/edit:${javato.work.dir}/../class/oro.jar:${javato.work.dir}/../class/servlet.jar:${javato.work.dir}/../class/Tidy.jar:${javato.work.dir}/../class/xp.jar:${javato.work.dir}/../class/sax.jar:${javato.work.dir}/../class/xerces.jar"/>
+        <property name="javato.app.main.class" value="org.w3c.jigsaw.Main"/>
+        <property name="javato.deadlock.cyclenum.file" value="${javato.work.dir}/deadlock.list"/>
+        <property name="javato.instops" value="-i org.w3c"/>
+        <property name="javato.app.args" value="-config ../java_bench/jigsaw/Jigsaw/config"/>
+        <ant dir="${javato.work.dir}/.."/>
+        <property name="javato.ignore.methods" value="true"/>
+        <property name="javato.ignore.allocs" value="true"/>
+        <property name="javato.activetesting.trialnum.list" value="1,2"/>
+        <property name="javato.track.iid.visit.count" value="true"/>
+        <property name="javato.schedule.deterministic" value="true"/>
+        <property name="javato.track.lock.races" value="true"/>
+        <property name="javato.activetesting.errorlist.file" value="${javato.work.dir}/error.list"/>
+        <antcall target="instr"/>
+		<parallel>
+			<antcall target="analysis-once">
+				<param name="javato.activetesting.analysis.class" value="javato.activetesting.IGoodlockAnalysis"/>
+			</antcall>
+			<antcall target="-jigsaw_harness"/>
+		</parallel>
+		<property name="javato.activetesting.timeout" value="180000"/>
+        <antcall target="-predictest-loop-jigsaw">
+            <param name="javato.activetesting.analysis.class" value="javato.activetesting.CDeadlockAnalysis"/>
+        </antcall>
+	</target>
+
+	<target name="t_test_tomcat">
+		<property environment="env"/>
+        <property name="javato.work.dir" value="${javabenchdir}/jakarta-tomcat-4.0"/>
+        <property name="javato.app.instr.dir"
+                  value="${javato.work.dir}/catalina/build/classes"/>
+        <property name="javato.app.class.path"
+                  value="${env.JAVA_HOME}/jre/lib/rt.jar:${env.JAVA_HOME}/lib/tools.jar:${javato.work.dir}/lib/jakarta-servletapi-4/lib/servlet.jar:${javato.work.dir}/lib/jakarta-regexp-1.2/jakarta-regexp-1.2.jar:${javato.work.dir}/lib/javamail-1.2/mail.jar:${javato.work.dir}/lib/jaf-1.0.2/activation.jar:${javato.work.dir}/lib/crimson.jar:${javato.work.dir}/jaxp.jar:${javato.work.dir}/lib/jaxp-1.1/xalan.jar:${javato.work.dir}/lib/jdbc2_0-stdext/jdbc2_0-stdext.jar:${javato.work.dir}/lib/jmx_1.1_ri_bin/lib/jmxri.jar:${javato.work.dir}/lib/jndi_1.2.1/lib/jndi.jar:${javato.work.dir}/lib/jndi_1.2.1/lib/ldap.jar:${javato.work.dir}/lib/jsse1.0.2/lib/jcert.jar:${javato.work.dir}/lib/jsse1.0.2/lib/jnet.jar:${javato.work.dir}/lib/jsse1.0.2/lib/jsse.jar:${javato.work.dir}/lib/junit3.7/junit.jar:${javato.work.dir}/lib/tyrex-0.9.7.0/tyrex-0.9.7.0.jar:${javato.work.dir}/lib/jta-spec1_0_1/jta-spec1_0_1.jar:${javato.work.dir}/jasper/build/classes"/>
+        <property name="javato.app.main.class" value="org.apache.catalina.startup.Bootstrap"/>
+        <property name="javato.instops" value="-x tyrex -i org.apache -process-dir ${javato.work.dir}/jasper/build/classes"/>
+		<property name="catalina.base" value="${javato.work.dir}/dist"/>
+		<property name="catalina.home" value="${javato.work.dir}/dist"/>
+        <property name="javato.app.args" value="start"/>
+        <!--
+		<ant dir="${javato.work.dir}" target="dist"/>
+		-->
+        <property name="javato.ignore.methods" value="true"/>
+        <property name="javato.ignore.allocs" value="true"/>
+        <property name="javato.activetesting.trialnum.list" value="1,2"/>
+        <property name="javato.track.iid.visit.count" value="true"/>
+        <property name="javato.schedule.deterministic" value="true"/>
+        <property name="javato.track.lock.races" value="true"/>
+        <property name="javato.activetesting.errorlist.file" value="${javato.work.dir}/error.list"/>
+        <antcall target="instr"/>
+		<parallel>
+			<antcall target="analysis-once">
+				<param name="javato.activetesting.analysis.class" value="javato.activetesting.IGoodlockAnalysis"/>
+			</antcall>
+			<antcall target="-tomcat_harness"/>
+		</parallel>
+        <antcall target="-predictest-loop-tomcat">
+            <param name="javato.activetesting.analysis.class" value="javato.activetesting.CDeadlockAnalysis"/>
+        </antcall>
+	</target>
+
+	<target name="-jigsaw_harness">
+		<sequential>
+			<exec executable="sleep">
+				<arg value="10"/>
+			</exec>
+			<parallel>
+				<java classname="JigsawHarnessPretex"
+				fork="true" dir="${javato.work.dir}" maxmemory="2048m" taskname="client" timeout="60000">
+				<classpath>
+					<pathelement location="${javato.work.dir}/.."/>
+				</classpath>
+				</java>
+				<sequential>
+					<exec executable="sleep">
+						<arg value="10"/>
+					</exec>
+					<java classname="org.w3c.jigsaw.admin.JigKill"
+					fork="true" dir="${javato.work.dir}" maxmemory="2048m" timeout="60000">
+					<arg line="-u admin -p admin --stop http://127.0.0.1:8009/"/>
+					<classpath>
+						<pathelement path="${javato.app.class.path}"/>
+					</classpath>
+					</java>
+				</sequential>
+			</parallel>
+			<java classname="org.w3c.jigsaw.admin.JigKill"
+					fork="true" dir="${javato.work.dir}" maxmemory="2048m" timeout="60000">
+				<arg line="-u admin -p admin --stop http://127.0.0.1:8009/"/>
+				<classpath>
+					<pathelement path="${javato.app.class.path}"/>
+				</classpath>
+			</java>
+		</sequential>
+	</target>
+
+	<target name="-tomcat_harness">
+		<sequential>
+			<exec executable="sleep">
+				<arg value="10"/>
+			</exec>
+			<parallel>
+				<java classname="TomcatHarness"
+				fork="true" dir="${javato.work.dir}/srcHarness" maxmemory="2048m" taskname="client">
+				<classpath>
+					<pathelement location="${javato.work.dir}/srcHarness"/>
+				</classpath>
+				</java>
+				<sequential>
+					<exec executable="sleep">
+						<arg value="20"/>
+					</exec>
+					<exec executable="${javato.work.dir}/dist/bin/shutdown.sh"/>
+				</sequential>
+			</parallel>
+			<exec executable="${javato.work.dir}/dist/bin/shutdown.sh"/>
+		</sequential>
+	</target>
+
+    <target name="-predictest-loop-jigsaw">
+        <!--
+              Required properties:
+                  javato.work.dir
+                  javato.app.main.cdlass
+                  javato.activetesting.trialnum.list
+                  javato.deadlock.cyclenum.file
+              Optional properties:
+                  javato.app.args
+                  javato.app.class.path
+              Forbidden properties:
+                  javato.deadlock.cyclenum
+                  javato.deadlock.cyclenum.list
+          -->
+        <fail unless="javato.work.dir"/>
+        <fail unless="javato.app.main.class"/>
+        <fail unless="javato.activetesting.trialnum.list"/>
+        <fail unless="javato.activetesting.errorlist.file"/>
+        <fail if="javato.activetesting.errornum"/>
+        <fail if="javato.activetesting.errorlist"/>
+        <loadfile property="javato.activetesting.errorlist"
+                  srcFile="${javato.activetesting.errorlist.file}">
+            <filterchain>
+                <striplinebreaks/>
+            </filterchain>
+        </loadfile>
+        <if>
+            <isset property="javato.activetesting.errorlist"/>
+            <then>
+                <for param="trialnum" list="${javato.activetesting.trialnum.list}">
+                    <sequential>
+                        <echo message="Iteration: @{trialnum}"/>
+                        <echo message="------------------"/>
+                        <for param="errornum" list="${javato.activetesting.errorlist}">
+                            <sequential>
+                                <echo message="Error:Iteration = @{errornum}:@{trialnum}"/>
+                                <echo message="------------------"/>
+								<parallel>
+									<antcall target="analysis-once">
+										<param name="javato.activetesting.errorid" value="@{errornum}"/>
+									</antcall>
+									<antcall target="-jigsaw_harness"/>
+								</parallel>
+                            </sequential>
+                        </for>
+                    </sequential>
+                </for>
+            </then>
+        </if>
+    </target>
+
+    <target name="-predictest-loop-tomcat">
+        <!--
+              Required properties:
+                  javato.work.dir
+                  javato.app.main.class
+                  javato.activetesting.trialnum.list
+                  javato.deadlock.cyclenum.file
+              Optional properties:
+                  javato.app.args
+                  javato.app.class.path
+              Forbidden properties:
+                  javato.deadlock.cyclenum
+                  javato.deadlock.cyclenum.list
+          -->
+        <fail unless="javato.work.dir"/>
+        <fail unless="javato.app.main.class"/>
+        <fail unless="javato.activetesting.trialnum.list"/>
+        <fail unless="javato.activetesting.errorlist.file"/>
+        <fail if="javato.activetesting.errornum"/>
+        <fail if="javato.activetesting.errorlist"/>
+        <loadfile property="javato.activetesting.errorlist"
+                  srcFile="${javato.activetesting.errorlist.file}">
+            <filterchain>
+                <striplinebreaks/>
+            </filterchain>
+        </loadfile>
+        <if>
+            <isset property="javato.activetesting.errorlist"/>
+            <then>
+                <for param="trialnum" list="${javato.activetesting.trialnum.list}">
+                    <sequential>
+                        <echo message="Iteration: @{trialnum}"/>
+                        <echo message="------------------"/>
+                        <for param="errornum" list="${javato.activetesting.errorlist}">
+                            <sequential>
+                                <echo message="Error:Iteration = @{errornum}:@{trialnum}"/>
+                                <echo message="------------------"/>
+								<parallel>
+									<antcall target="analysis-once">
+										<param name="javato.activetesting.errorid" value="@{errornum}"/>
+									</antcall>
+									<antcall target="-tomcat_harness"/>
+								</parallel>
+								<parallel>
+									<antcall target="analysis-once">
+										<param name="javato.activetesting.errorid" value="@{errornum}"/>
+										<param name="javato.race.resolve.order" value="true"/>
+									</antcall>
+									<antcall target="-tomcat_harness"/>
+								</parallel>
+                            </sequential>
+                        </for>
+                    </sequential>
+                </for>
+            </then>
+        </if>
+    </target>
+
+    <target name="predictest">
+        <antcall target="test_log4j_t"/>
+        <antcall target="test_sor_t"/>
+        <antcall target="test_rt_t"/>
+        <antcall target="test_hedc_t"/>
+        <antcall target="test_mc_t"/>
+        <antcall target="test_moldyn_t"/>
+    </target>
+
+    <target name="predictest2">
+        <antcall target="test_log4j2_t"/>
+        <antcall target="t_test_pool"/>
+        <antcall target="t_test_swing"/>
+        <antcall target="t_test_dbcp"/>
+        <antcall target="t_test_log"/>
+        <antcall target="t_test_jigsaw"/>
+        <antcall target="test_cache4j_t"/>
+        <antcall target="test_list_t"/>
+        <antcall target="test_array_list_t"/>
+        <antcall target="test_set_t"/>
+        <antcall target="test_tree_set_t"/>
+        <antcall target="test_linked_hash_set_t"/>
+        <antcall target="test_vector_t"/>
+    </target>
+
+
+</project>

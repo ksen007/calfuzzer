@@ -1,0 +1,80 @@
+read@benchmarks/hedc/regexp/Multi.java#26||write@benchmarks/hedc/regexp/Regexp.java#145
+1:::
+read@benchmarks/hedc/regexp/Multi.java#26||write@benchmarks/hedc/regexp/Regexp.java#145
+1:::
+read@benchmarks/hedc/regexp/RegexpCompiler.java#74||write@benchmarks/hedc/regexp/Regexp.java#145
+2:::
+read@benchmarks/hedc/regexp/RegexpCompiler.java#74||write@benchmarks/hedc/regexp/Regexp.java#145
+2:::
+read@benchmarks/hedc/regexp/Regexp.java#224||write@benchmarks/hedc/regexp/Regexp.java#145
+3:::
+read@benchmarks/hedc/regexp/Regexp.java#224||write@benchmarks/hedc/regexp/Regexp.java#145
+3:::
+volatile read@benchmarks/hedc/PooledExecutorWithInvalidate.java#185||volatile write@benchmarks/hedc/PooledExecutorWithInvalidate.java#194
+4:data race::
+volatile read@benchmarks/hedc/PooledExecutorWithInvalidate.java#185||volatile write@benchmarks/hedc/PooledExecutorWithInvalidate.java#194
+4:data race::
+read@benchmarks/hedc/MetaSearchResult.java#50||write@benchmarks/hedc/Task.java#45
+5:::
+read@benchmarks/hedc/MetaSearchResult.java#50||write@benchmarks/hedc/Task.java#45
+5:::
+write@benchmarks/hedc/MetaSearchResult.java#53||read@benchmarks/hedc/MetaSearchResult.java#60
+6:::
+write@benchmarks/hedc/MetaSearchResult.java#53||read@benchmarks/hedc/MetaSearchResult.java#60
+6:::
+read@benchmarks/hedc/MetaSearchResult.java#25||write@benchmarks/hedc/SohoSynoptic.java#309
+7:::
+read@benchmarks/hedc/MetaSearchResult.java#25||write@benchmarks/hedc/SohoSynoptic.java#309
+7:::
+read@benchmarks/hedc/MetaSearchResult.java#25||write@benchmarks/hedc/SohoSynoptic.java#309
+8:::
+read@benchmarks/hedc/MetaSearchResult.java#25||write@benchmarks/hedc/SohoSynoptic.java#309
+8:::
+read@benchmarks/hedc/MetaSearchResult.java#13||write@benchmarks/hedc/MetaSearchResult.java#59
+9:::
+read@benchmarks/hedc/MetaSearchResult.java#13||write@benchmarks/hedc/MetaSearchResult.java#59
+9:::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/LinkedQueue.java#112||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/LinkedQueue.java#112
+10:lock contention::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/LinkedQueue.java#112||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/LinkedQueue.java#112
+10:lock contention::
+read@benchmarks/hedc/regexp/Multi.java#26||write@benchmarks/hedc/regexp/Regexp.java#145
+1:::
+read@benchmarks/hedc/regexp/Multi.java#26||write@benchmarks/hedc/regexp/Regexp.java#145
+1:::
+read@benchmarks/hedc/regexp/RegexpCompiler.java#74||write@benchmarks/hedc/regexp/Regexp.java#145
+2:::
+read@benchmarks/hedc/regexp/RegexpCompiler.java#74||write@benchmarks/hedc/regexp/Regexp.java#145
+2:::
+read@benchmarks/hedc/regexp/Regexp.java#224||write@benchmarks/hedc/regexp/Regexp.java#145
+3:::
+read@benchmarks/hedc/regexp/Regexp.java#224||write@benchmarks/hedc/regexp/Regexp.java#145
+3:::
+volatile read@benchmarks/hedc/PooledExecutorWithInvalidate.java#185||volatile write@benchmarks/hedc/PooledExecutorWithInvalidate.java#194
+4:data race::
+volatile read@benchmarks/hedc/PooledExecutorWithInvalidate.java#185||volatile write@benchmarks/hedc/PooledExecutorWithInvalidate.java#194
+4:data race::
+read@benchmarks/hedc/MetaSearchResult.java#50||write@benchmarks/hedc/Task.java#45
+5:::
+read@benchmarks/hedc/MetaSearchResult.java#50||write@benchmarks/hedc/Task.java#45
+5:::
+write@benchmarks/hedc/MetaSearchResult.java#53||read@benchmarks/hedc/MetaSearchResult.java#60
+6:::
+write@benchmarks/hedc/MetaSearchResult.java#53||read@benchmarks/hedc/MetaSearchResult.java#60
+6:::
+read@benchmarks/hedc/MetaSearchResult.java#25||write@benchmarks/hedc/SohoSynoptic.java#309
+7:::
+read@benchmarks/hedc/MetaSearchResult.java#25||write@benchmarks/hedc/SohoSynoptic.java#309
+7:::
+read@benchmarks/hedc/MetaSearchResult.java#25||write@benchmarks/hedc/SohoSynoptic.java#309
+8:::
+read@benchmarks/hedc/MetaSearchResult.java#25||write@benchmarks/hedc/SohoSynoptic.java#309
+8:::
+read@benchmarks/hedc/MetaSearchResult.java#13||write@benchmarks/hedc/MetaSearchResult.java#59
+9:::
+read@benchmarks/hedc/MetaSearchResult.java#13||write@benchmarks/hedc/MetaSearchResult.java#59
+9:::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/LinkedQueue.java#112||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/LinkedQueue.java#112
+10:lock contention::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/LinkedQueue.java#112||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/LinkedQueue.java#112
+10:lock contention::

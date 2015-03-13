@@ -1,0 +1,16 @@
+lock@benchmarks/testcases/TestDeadlock3.java#32||lock@benchmarks/testcases/TestDeadlock3.java#51
+1:lock contention::
+lock@benchmarks/testcases/TestDeadlock3.java#32||lock@benchmarks/testcases/TestDeadlock3.java#51
+1:lock contention:deadlock:
+lock@benchmarks/testcases/TestDeadlock3.java#33||lock@benchmarks/testcases/TestDeadlock3.java#50
+2:lock contention:deadlock:
+lock@benchmarks/testcases/TestDeadlock3.java#33||lock@benchmarks/testcases/TestDeadlock3.java#50
+2:lock contention::
+lock@benchmarks/testcases/TestDeadlock3.java#32||lock@benchmarks/testcases/TestDeadlock3.java#51
+1:lock contention::
+lock@benchmarks/testcases/TestDeadlock3.java#32||lock@benchmarks/testcases/TestDeadlock3.java#51
+1:lock contention:deadlock:
+lock@benchmarks/testcases/TestDeadlock3.java#33||lock@benchmarks/testcases/TestDeadlock3.java#50
+2:lock contention:deadlock:
+lock@benchmarks/testcases/TestDeadlock3.java#33||lock@benchmarks/testcases/TestDeadlock3.java#50
+2:lock contention::

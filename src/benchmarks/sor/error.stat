@@ -1,0 +1,80 @@
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178
+1:lock contention::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178
+1:lock contention::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#252
+2:lock contention::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#252
+2:lock contention::
+read@benchmarks/sor/Sor.java#166||write@benchmarks/sor/Sor.java#212
+3:::
+read@benchmarks/sor/Sor.java#166||write@benchmarks/sor/Sor.java#212
+3:::
+read@benchmarks/sor/Sor.java#231||write@benchmarks/sor/Sor.java#147
+4:::
+read@benchmarks/sor/Sor.java#231||write@benchmarks/sor/Sor.java#147
+4:::
+write@benchmarks/sor/Sor.java#166||read@benchmarks/sor/Sor.java#212
+5:::
+write@benchmarks/sor/Sor.java#166||read@benchmarks/sor/Sor.java#212
+5:::
+read@benchmarks/sor/Sor.java#231||write@benchmarks/sor/Sor.java#147
+6:::
+read@benchmarks/sor/Sor.java#231||write@benchmarks/sor/Sor.java#147
+6:::
+write@benchmarks/sor/Sor.java#231||read@benchmarks/sor/Sor.java#147
+7:::
+write@benchmarks/sor/Sor.java#231||read@benchmarks/sor/Sor.java#147
+7:::
+write@benchmarks/sor/Sor.java#231||read@benchmarks/sor/Sor.java#147
+8:::
+write@benchmarks/sor/Sor.java#231||read@benchmarks/sor/Sor.java#147
+8:::
+read@benchmarks/sor/Sor.java#166||write@benchmarks/sor/Sor.java#212
+9:::
+read@benchmarks/sor/Sor.java#166||write@benchmarks/sor/Sor.java#212
+9:::
+write@benchmarks/sor/Sor.java#166||read@benchmarks/sor/Sor.java#212
+10:::
+write@benchmarks/sor/Sor.java#166||read@benchmarks/sor/Sor.java#212
+10:::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178
+1:lock contention::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178
+1:lock contention::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#252
+2:lock contention::
+lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#178||lock@benchmarks/EDU/oswego/cs/dl/util/concurrent/CyclicBarrier.java#252
+2:lock contention::
+read@benchmarks/sor/Sor.java#166||write@benchmarks/sor/Sor.java#212
+3:::
+read@benchmarks/sor/Sor.java#166||write@benchmarks/sor/Sor.java#212
+3:::
+read@benchmarks/sor/Sor.java#231||write@benchmarks/sor/Sor.java#147
+4:::
+read@benchmarks/sor/Sor.java#231||write@benchmarks/sor/Sor.java#147
+4:::
+write@benchmarks/sor/Sor.java#166||read@benchmarks/sor/Sor.java#212
+5:::
+write@benchmarks/sor/Sor.java#166||read@benchmarks/sor/Sor.java#212
+5:::
+read@benchmarks/sor/Sor.java#231||write@benchmarks/sor/Sor.java#147
+6:::
+read@benchmarks/sor/Sor.java#231||write@benchmarks/sor/Sor.java#147
+6:::
+write@benchmarks/sor/Sor.java#231||read@benchmarks/sor/Sor.java#147
+7:::
+write@benchmarks/sor/Sor.java#231||read@benchmarks/sor/Sor.java#147
+7:::
+write@benchmarks/sor/Sor.java#231||read@benchmarks/sor/Sor.java#147
+8:::
+write@benchmarks/sor/Sor.java#231||read@benchmarks/sor/Sor.java#147
+8:::
+read@benchmarks/sor/Sor.java#166||write@benchmarks/sor/Sor.java#212
+9:::
+read@benchmarks/sor/Sor.java#166||write@benchmarks/sor/Sor.java#212
+9:::
+write@benchmarks/sor/Sor.java#166||read@benchmarks/sor/Sor.java#212
+10:::
+write@benchmarks/sor/Sor.java#166||read@benchmarks/sor/Sor.java#212
+10:::

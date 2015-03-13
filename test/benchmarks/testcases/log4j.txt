@@ -1,0 +1,8 @@
+read@org/apache/log4j/spi/LoggingEvent.java#301||write@org/apache/log4j/spi/LoggingEvent.java#37
+1:::
+read@org/apache/log4j/spi/LoggingEvent.java#301||write@org/apache/log4j/spi/LoggingEvent.java#37
+1:::
+read@org/apache/log4j/spi/LoggingEvent.java#301||write@org/apache/log4j/spi/LoggingEvent.java#37
+1:::
+read@org/apache/log4j/spi/LoggingEvent.java#301||write@org/apache/log4j/spi/LoggingEvent.java#37
+1:::

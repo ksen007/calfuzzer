@@ -1,0 +1,30 @@
+#
+# $Id: properties.txt,v 1.1 2001/03/16 17:55:07 praun Exp $
+#
+# Copyright (C) 1998 by ETHZ/INF/CS
+# All rights reserved
+#
+# 10/03/01 cvp
+# 
+
+# properties for the library
+ethz.hedc.ui.FormFiller.TEMPLATE_PATH=./html
+ethz.util.Generator.POOL_CAPACITY=8
+ethz.util.Generator.NAMED_POOL_CAPACITY=8
+
+Messages.WARN_LEVEL=5
+Messages.DEBUG_LEVEL=5
+Tester.THREADS=2
+Tester.PAUSE=200
+Tester.ITERATIONS=2
+Tester.START=2000/01/20 00:00:00
+Tester.END=2000/02/20 23:00:00
+
+Tester.SOHO_SYNOPTIC=1
+Tester.RAG=0
+Tester.SACREAMENTAL=0
+Tester.MESOLA=0
+Tester.WAIT_TIME=10
+
+
+

@@ -1,0 +1,24 @@
+volatile write@benchmarks/testcases/TestRace13.java#47||volatile read@benchmarks/testcases/TestRace13.java#41
+1:data race::
+volatile write@benchmarks/testcases/TestRace13.java#47||volatile read@benchmarks/testcases/TestRace13.java#41
+1:data race::
+volatile write@benchmarks/testcases/TestRace13.java#41||volatile write@benchmarks/testcases/TestRace13.java#47
+2:data race::
+volatile write@benchmarks/testcases/TestRace13.java#41||volatile write@benchmarks/testcases/TestRace13.java#47
+2:data race::
+volatile write@benchmarks/testcases/TestRace13.java#41||volatile read@benchmarks/testcases/TestRace13.java#47
+3:data race::
+volatile write@benchmarks/testcases/TestRace13.java#41||volatile read@benchmarks/testcases/TestRace13.java#47
+3:data race::
+volatile write@benchmarks/testcases/TestRace13.java#47||volatile read@benchmarks/testcases/TestRace13.java#41
+1:data race::
+volatile write@benchmarks/testcases/TestRace13.java#47||volatile read@benchmarks/testcases/TestRace13.java#41
+1:data race::
+volatile write@benchmarks/testcases/TestRace13.java#41||volatile write@benchmarks/testcases/TestRace13.java#47
+2:data race::
+volatile write@benchmarks/testcases/TestRace13.java#41||volatile write@benchmarks/testcases/TestRace13.java#47
+2:data race::
+volatile write@benchmarks/testcases/TestRace13.java#41||volatile read@benchmarks/testcases/TestRace13.java#47
+3:data race::
+volatile write@benchmarks/testcases/TestRace13.java#41||volatile read@benchmarks/testcases/TestRace13.java#47
+3:data race::

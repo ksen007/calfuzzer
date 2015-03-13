@@ -1,0 +1,45 @@
+INSTALL
+-------
+
+download calfuzzer.tar.gz from http://srl.cs.berkeley.edu/~ksen/calfuzzer/
+tar zxvf calfuzzer.tar.gz
+cd calfuzzer
+ant
+
+TEST
+----
+
+ant -f run.xml test_hedc
+ant -f run.xml test_1
+
+HOW CAN I WRITE MY OWN ANALYSIS?
+--------------------------
+Check out the tool paper activetool.pdf.
+
+See
+
+src/javato/activetesting/HybridAnalysis.java
+src/javato/activetesting/RaceFuzzerAnalysis.java
+
+for an implementation of RaceFuzzer.  Note that this is not the optimized implementation reported in the PLDI'08 paper.
+
+see the target "racefuzzer" and target "test_sor" in run.xml for details on how to invoke RaceFuzzer
+
+Similarly, see
+
+src/javato/activetesting/IGoodlockAnalysis.java
+src/javato/activetesting/DeadlockFuzzerAnalysis.java
+
+for an implementation of DeadlockFuzzer.  Note that this is not the optimized implementation reported in the PLDI'09 paper.
+
+see the target "deadlockfuzzer" and target "test_6" in run.xml for details on how to invoke DeadlockFuzzer
+
+Similarly, see
+
+src/javato/activetesting/PAtomicityAnalysis.java
+src/javato/activetesting/RaceFuzzerAnalysis.java
+
+for an implementation of AtomFuzzer.  Note that this is not the implementation reported in the FSE'09 paper, but
+a combination of the techniques reported in FSE 09 and CAV 09.
+
+see the target "atomfuzzer" and target "test_atomfuzzer15" in run.xml for details on how to invoke AtomFuzzer

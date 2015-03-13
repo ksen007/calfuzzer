@@ -1,0 +1,4 @@
+-Marking blocks as non-atomic when they call notify is not sound, since if the notify is missed (perhaps there aren't any other threads) it is still atomic.  But we don't care since we are neither sound nor complete.
+
+-On hedc, we generate tons of races between a recursive function and initializing a static field.  Is there any way we can detect and ignore races on initializations?
+-On cache4j, we just generate way too many races on the same lines but with different threads/contexts.

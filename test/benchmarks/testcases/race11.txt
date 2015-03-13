@@ -1,0 +1,32 @@
+lock@benchmarks/testcases/TestRace11.java#43||lock@benchmarks/testcases/TestRace11.java#52
+1:lock contention::
+lock@benchmarks/testcases/TestRace11.java#43||lock@benchmarks/testcases/TestRace11.java#52
+1:lock contention::
+read@benchmarks/testcases/TestRace11.java#47||write@benchmarks/testcases/TestRace11.java#51
+2:data race::
+read@benchmarks/testcases/TestRace11.java#47||write@benchmarks/testcases/TestRace11.java#51
+2:data race::
+write@benchmarks/testcases/TestRace11.java#47||write@benchmarks/testcases/TestRace11.java#51
+3:data race::
+write@benchmarks/testcases/TestRace11.java#47||write@benchmarks/testcases/TestRace11.java#51
+3:data race::
+write@benchmarks/testcases/TestRace11.java#47||read@benchmarks/testcases/TestRace11.java#51
+4:data race::
+write@benchmarks/testcases/TestRace11.java#47||read@benchmarks/testcases/TestRace11.java#51
+4:data race::
+lock@benchmarks/testcases/TestRace11.java#43||lock@benchmarks/testcases/TestRace11.java#52
+1:lock contention::
+lock@benchmarks/testcases/TestRace11.java#43||lock@benchmarks/testcases/TestRace11.java#52
+1:lock contention::
+read@benchmarks/testcases/TestRace11.java#47||write@benchmarks/testcases/TestRace11.java#51
+2:data race::
+read@benchmarks/testcases/TestRace11.java#47||write@benchmarks/testcases/TestRace11.java#51
+2:data race::
+write@benchmarks/testcases/TestRace11.java#47||write@benchmarks/testcases/TestRace11.java#51
+3:data race::
+write@benchmarks/testcases/TestRace11.java#47||write@benchmarks/testcases/TestRace11.java#51
+3:data race::
+write@benchmarks/testcases/TestRace11.java#47||read@benchmarks/testcases/TestRace11.java#51
+4:data race::
+write@benchmarks/testcases/TestRace11.java#47||read@benchmarks/testcases/TestRace11.java#51
+4:data race::
